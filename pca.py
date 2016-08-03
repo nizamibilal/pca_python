@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import proj3d
+from matplotlib.patches import FancyArrowPatch
 
 
 np.random.seed(1) # random seed for consistency
@@ -27,7 +28,7 @@ assert class1_sample.shape == (3,20), "The matrix has not the dimensions 3x20"
 #print(class2_sample)
 fig = plt.figure(figsize=(8,8))
 ax = fig.add_subplot(111, projection='3d')
-plt.rcParams['legend.fontsize'] = 10   
+plt.rcParams['legend.fontsize'] = 10
 ax.plot(class1_sample[0,:], class1_sample[1,:], class1_sample[2,:], 'o', markersize=8, color='blue', alpha=0.5, label='class1')
 ax.plot(class2_sample[0,:], class2_sample[1,:], class2_sample[2,:], '^', markersize=8, alpha=0.5, color='red', label='class2')
 
@@ -36,24 +37,77 @@ ax.legend(loc='upper right')
 
 #plt.show()
 
-class3_sample = np.concatenate([class1_sample,class2_sample],1)
-assert class3_sample.shape == (3,40), "The matrix doesn't have dimention of 3X40"
+sample_pca = np.concatenate([class1_sample,class2_sample],1)
+assert sample_pca.shape == (3,40), "The matrix doesn't have dimention of 3X40"
 
-#print(class3_sample)
+print(sample_pca)
+print ('\n above is the input matrix\n\n\n')
 
 ## mean vector for each row
 
-mean_x = np.mean(class3_sample[0,])
-mean_y = np.mean(class3_sample[1,])
-mean_z = np.mean(class3_sample[2,])
+mean_x = np.mean(sample_pca[0,])
+mean_y = np.mean(sample_pca[1,])
+mean_z = np.mean(sample_pca[2,])
 mean_vec = np.array([mean_x,mean_y,mean_z])
-print(mean_vec)
+
+#print(mean_vec)
+
 #print(mean_y)
 
 
 #===========================
 # scatter matrix
 #
-#print (range(class3_sample.shape[0]))
-for i in range(class3_sample.shape[0])
+
+#print (range(sample_pca.shape[0]))
+#sc_matrix = np.zeros((3,3))    
+#for i in range(sample_pca.shape[1]):
+#    sc_matrix += (sample_pca[:,i].reshape(3,1) - mean_vec).dot((sample_pca[:,i].reshape(3,1)-mean_vec).T)  
+#print (sc_matrix)    
+
+#=========
+# Covariance matrix
+
+cova_mat = np.cov([sample_pca[0,:], sample_pca[1,:], sample_pca[2,:]])
+#print (cova_mat)
+
+#============================
+# eigenvalue and eigenvector
+
+my_eigen, my_eigvec = np.linalg.eig(cova_mat)
+print (my_eigen, '\n', my_eigvec)
+#print (cova_mat.dot(my_eigvec))
+print ('\n\n\n')
+#print (my_eigen.dot(my_eigvec))
+print (my_eigvec[:,0].reshape(1,3).T)
+
+#=====================================
+# plot the eigenvalue
+
+class Arrow3D(FancyArrowPatch):
+    def __init__(self, xs, ys, zs, *args, **kwargs):
+        FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
+        self._verts3d = xs, ys, zs
+
+    def draw(self, renderer):
+        xs3d, ys3d, zs3d = self._verts3d
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
+        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+        FancyArrowPatch.draw(self, renderer)
+
+fig = plt.figure(figsize=(7,7))
+ax = fig.add_subplot(111, projection='3d')
+
+ax.plot(sample_pca[0,:], sample_pca[1,:], sample_pca[2,:], 'o', markersize=8, color='green', alpha=0.2)
+ax.plot([mean_x], [mean_y], [mean_z], 'o', markersize=10, color='red', alpha=0.5)
+for v in my_eigvec.T:
+    a = Arrow3D([mean_x, v[0]], [mean_y, v[1]], [mean_z, v[2]], mutation_scale=20, lw=3, arrowstyle="-|>", color="r")
+    ax.add_artist(a)
+ax.set_xlabel('x_values')
+ax.set_ylabel('y_values')
+ax.set_zlabel('z_values')
+
+plt.title('Eigenvectors')
+
+plt.show()
     
