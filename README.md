@@ -1,1 +1,1 @@
-Principle component analysis
+Principle component analysis using python and numpy. 
