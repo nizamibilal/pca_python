@@ -5,8 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import proj3d
 from matplotlib.patches import FancyArrowPatch
 
-
-np.random.seed(1) # random seed for consistency
+np.random.seed(1) # random seed to generate same matrix 
 
 # A reader pointed out that Python 2.7 would raise a
 # "ValueError: object of too small depth for desired array".
@@ -35,12 +34,12 @@ ax.plot(class2_sample[0,:], class2_sample[1,:], class2_sample[2,:], '^', markers
 plt.title('Samples for class 1 and class 2')
 ax.legend(loc='upper right')
 
-#plt.show()
+plt.show()
 
 sample_pca = np.concatenate([class1_sample,class2_sample],1)
 assert sample_pca.shape == (3,40), "The matrix doesn't have dimention of 3X40"
 
-#print(sample_pca)
+print('sample', sample_pca)
 #print ('\n above is the input matrix\n\n\n')
 
 ## mean vector for each row
@@ -75,7 +74,7 @@ cova_mat = np.cov([sample_pca[0,:], sample_pca[1,:], sample_pca[2,:]])
 # eigenvalue and eigenvector
 
 my_eigen, my_eigvec = np.linalg.eig(cova_mat)
-print (my_eigen, my_eigvec)
+#print (my_eigen, my_eigvec)
 #print (cova_mat.dot(my_eigvec))
 #print ('\n\n\n')
 #print (my_eigen.dot(my_eigvec))
@@ -109,15 +108,39 @@ ax.set_zlabel('z_values')
 
 plt.title('Eigenvectors')
 
-#plt.show()
+plt.show()
 
 # Combine eigenvalue, eigenvector in a tuples
-eigen_pairs = ()
-for i in range(len(my_eigen)):
- eigen_pairs = [np.abs(my_eigen[i]), my_eigvec[:,i]]
+#eig_pairs = [(np.abs(my_eigen[i]), my_eigvec[:,i]) for i in range(len(my_eigen))]
 
-#eigen_pairs.sort(key=lambda x: x[0], reverse=True)
-print (eigen_pairs) 
-#for i in eigen_pairs:
+#eig_pairs = []
+e_p = []
+for i in range(len(my_eigen)):
+ eig_pairs = [np.abs(my_eigen[i]), my_eigvec[:,i]]
+ e_p.append(eig_pairs)
+
+e_p.sort(key=lambda x: x[0], reverse=True)
+#print (eig_pairs)
+#print (e_p) 
+#for i in e_p:
 #	print(i[0])
+	
+#Eigenvectors matrix with two top eigenvalue
+eigen_matrix = np.hstack((e_p[0][1].reshape(3,1),e_p[1][1].reshape(3,1)))
+#print (eigen_matrix)
+
+# transform the orignal matrix with eigen_matrix
+transf = eigen_matrix.T.dot(sample_pca)
+print(transf)
+ 
+plt.plot(transf[0,0:20], transf[1,0:20], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
+plt.plot(transf[0,20:40], transf[1,20:40], '^', markersize=7, color='red', alpha=0.5, label='class2')
+plt.xlim([-4,4])
+plt.ylim([-4,4])
+plt.xlabel('x_values')
+plt.ylabel('y_values')
+plt.legend()
+plt.title('Transformed samples with class labels')
+
+plt.show()
     
