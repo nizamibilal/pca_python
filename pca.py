@@ -40,8 +40,8 @@ ax.legend(loc='upper right')
 sample_pca = np.concatenate([class1_sample,class2_sample],1)
 assert sample_pca.shape == (3,40), "The matrix doesn't have dimention of 3X40"
 
-print(sample_pca)
-print ('\n above is the input matrix\n\n\n')
+#print(sample_pca)
+#print ('\n above is the input matrix\n\n\n')
 
 ## mean vector for each row
 
@@ -75,11 +75,11 @@ cova_mat = np.cov([sample_pca[0,:], sample_pca[1,:], sample_pca[2,:]])
 # eigenvalue and eigenvector
 
 my_eigen, my_eigvec = np.linalg.eig(cova_mat)
-print (my_eigen, '\n', my_eigvec)
+print (my_eigen, my_eigvec)
 #print (cova_mat.dot(my_eigvec))
-print ('\n\n\n')
+#print ('\n\n\n')
 #print (my_eigen.dot(my_eigvec))
-print (my_eigvec[:,0].reshape(1,3).T)
+#print (my_eigvec[:,0].reshape(1,3).T)
 
 #=====================================
 # plot the eigenvalue
@@ -109,5 +109,15 @@ ax.set_zlabel('z_values')
 
 plt.title('Eigenvectors')
 
-plt.show()
+#plt.show()
+
+# Combine eigenvalue, eigenvector in a tuples
+eigen_pairs = ()
+for i in range(len(my_eigen)):
+ eigen_pairs = [np.abs(my_eigen[i]), my_eigvec[:,i]]
+
+#eigen_pairs.sort(key=lambda x: x[0], reverse=True)
+print (eigen_pairs) 
+#for i in eigen_pairs:
+#	print(i[0])
     
