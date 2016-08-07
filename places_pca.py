@@ -6,6 +6,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import proj3d
 from matplotlib.patches import FancyArrowPatch
 from matplotlib.mlab import PCA
+from sklearn.preprocessing import scale
+from sklearn.decomposition import PCA as sklearnPCA
 
 ## Read data file 
 arr = []
@@ -23,16 +25,22 @@ for line in fp.readlines():
 fp.close()
 
 arr = np.array(arr)
+arr1 = np.array(arr) # non transformed input data
 
 # log transformation
 arr_log = np.zeros((329,14))
 for i in range(len(arr)):
-	arr_log[i,:] = np.log10(arr[i,:])
+	arr_log[i,:] = np.log10(arr[i,:]) 
+	
+# scale to unit variance 
+
+arr_scale = scale(arr, axis=0, with_mean=True, with_std=True, copy=True)
+arr = arr_scale	
 
 # check for NaNs in matrix and set it to 0 (due to log of negative numbers)	
 where_nans = np.isnan(arr_log)
 arr_log[where_nans] = 0
-arr = np.array(arr_log)
+#arr = np.array(arr_log)
 
 #Header and places titles
 head = ['Climate', 'HousingCost', 'HlthCare', 'Crime', 'Transp', 'Educ', 'Arts', 'Recreat', 'Econ', 'CaseNum', 'Long', 'Lat', 'Pop', 'StNum']
@@ -187,17 +195,48 @@ for i in e_p:
 	
 # Choose PC (take top two eigenvalues) 
 mat_w = np.hstack((e_p[0][1].reshape(14,1), e_p[1][1].reshape(14,1)))
-#print (np.shape(mat_w))
+#print (mat_w.T)
 #print (np.shape(arr))
 #========================================================
 # transform the input data into choosen pc
-arr_transformed = arr.dot(mat_w)
-#print (arr_transformed)
+arr_transformed = mat_w.T.dot(arr.T)
 
-plt.plot (arr_transformed[:,0], arr_transformed[:,1], marker = 'o', linestyle='None')
+print (arr_transformed)
+
+plt.plot (arr_transformed[0,:], arr_transformed[1,:], marker = 'o', linestyle='None')
 plt.show()
 
 ### pca by numpy in built method
 
-mlab_pca = PCA(arr)	
+mlab_pca = PCA(arr1)
+#print(mlab_pca.Y)	
 #print('PC axes in terms of the measurement axes scaled by the standard deviations:\n', mlab_pca.Wt)
+#plt.plot(mlab_pca.Y[0:329,0],mlab_pca.Y[0:329,1], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
+#plt.plot(mlab_pca.Y[20:40,0], mlab_pca.Y[20:40,1], '^', markersize=7, color='red', alpha=0.5, label='class2')
+
+plt.xlabel('x_values')
+plt.ylabel('y_values')
+plt.xlim([-4,4])
+plt.ylim([-4,4])
+plt.legend()
+plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
+
+#plt.show()
+
+
+###from sklearn.decomposition
+
+sklearn_pca = sklearnPCA(n_components=2)
+sklearn_transf = sklearn_pca.fit_transform(arr1)
+print (sklearn_transf.T)
+plt.plot(sklearn_transf[:,0],sklearn_transf[:,1], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
+#plt.plot(sklearn_transf[20:40,0], sklearn_transf[20:40,1], '^', markersize=7, color='red', alpha=0.5, label='class2')
+
+plt.xlabel('x_values')
+plt.ylabel('y_values')
+plt.xlim([-4,4])
+plt.ylim([-4,4])
+plt.legend()
+plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
+
+plt.show()
