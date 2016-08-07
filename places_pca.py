@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import numpy as np
+import numpy.ma as ma
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import proj3d
@@ -17,15 +18,24 @@ for line in fp.readlines():
     for i in line.split():
         # convert to integer and append to the last
         # element of the list
-        arr[-1].append(float(i))
+		arr[-1].append(float(i))
 
 fp.close()
+
 arr = np.array(arr)
 
-#print (np.shape(arr))
+# log transformation
+arr_log = np.zeros((329,14))
+for i in range(len(arr)):
+	arr_log[i,:] = np.log10(arr[i,:])
+
+# check for NaNs in matrix and set it to 0 (due to log of negative numbers)	
+where_nans = np.isnan(arr_log)
+arr_log[where_nans] = 0
+arr = np.array(arr_log)
 
 #Header and places titles
-head = ['Climate', 'HousingCost', 'HlthCare', 'Crime', 'Transp', 'Educ Arts', 'Recreat', 'Econ', 'CaseNum', 'Long', 'Lat', 'Pop', 'StNum']
+head = ['Climate', 'HousingCost', 'HlthCare', 'Crime', 'Transp', 'Educ', 'Arts', 'Recreat', 'Econ', 'CaseNum', 'Long', 'Lat', 'Pop', 'StNum']
 places = ('Abilene,TX', 'Akron,OH', 'Albany,GA', 'Albany-Schenectady-Troy,NY',\
 		'Albuquerque,NM', 'Alexandria,LA', 'Allentown,Bethlehem,PA-NJ', \
 		'Alton,Granite-City,IL', 'Altoona,PA', 'Amarillo,TX', 'Anaheim-Santa-Ana,CA', \
@@ -106,19 +116,18 @@ places = ('Abilene,TX', 'Akron,OH', 'Albany,GA', 'Albany-Schenectady-Troy,NY',\
 		'West-Palm-Beach-Boca-Raton-Delray-Beach,FL', 'Wheeling,WV-OH', 'Wichita,KS', \
 		'Wichita-Falls,TX', 'Williamsport,PA', 'Wilmington,DE-NJ-MD', 'Wilmington,NC', \
 		'Worcester,MA', 'Yakima,WA', 'York,PA', 'Youngstown-Warren,OH', 'Yuba-City,CA')
-for i in places:
-	print (i)
+
 #++++++++++++++++++++++=
 # plot 3 dimentions of the matrix, 
 # just change the index of vectors to plot different dimentions
 
 fig = plt.figure(figsize=(10,10))
-ax = fig.add_subplot(111,projection = '3d')
+ax = fig.add_subplot(111)
 #ax.plot(arr[:,0],arr[:,3], marker='o', linestyle='None')
 #plt.show()
 
-place_pca = PCA(arr)
-print(place_pca.fracs)
+#place_pca = PCA(arr)
+#print(place_pca.fracs)
 #print (place_pca.Y)
 #plt.plot(place_pca.Y[:,0],place_pca.Y[:,3], marker='^', linestyle='None')
 
@@ -126,4 +135,69 @@ print(place_pca.fracs)
 #plt.show()
 
 #=====================================================
-# computing the mean vectors
+# computing the mean vectors for headers
+mean_cli = np.mean(arr[:,0])
+mean_hou = np.mean(arr[:,1])
+mean_heal = np.mean(arr[:,2])
+mean_crime = np.mean(arr[:,3])
+mean_trans = np.mean(arr[:,4])
+mean_edu = np.mean(arr[:,5])
+mean_art = np.mean(arr[:,6])
+mean_rec = np.mean(arr[:,7])
+mean_econ = np.mean(arr[:,8])
+mean_casen = np.mean(arr[:,9])
+mean_long = np.mean(arr[:,10])
+mean_lat = np.mean(arr[:,11])
+mean_pop = np.mean(arr[:,12])
+mean_stn = np.mean(arr[:,13])
+
+#print (arr.mean(0))
+
+#===============================================
+# covariance matrix
+cov_mat = np.cov([arr[:,0],arr[:,1],arr[:,2],arr[:,3],arr[:,4],arr[:,5],arr[:,6],arr[:,7],arr[:,8],arr[:,9],arr[:,10],arr[:,11],arr[:,12],arr[:,13]])
+#print (np.shape(cov_mat), 'shape of the cov matrix')
+
+#===================================================
+# eigenvector and eigenvalues
+
+arr_eval, arr_evec = np.linalg.eig(cov_mat)
+
+
+#=============================
+# sanity check of calculated eigenvector and eigen values 
+# it must be cov matrix * eigen vector = eigen vector * eigen value
+for i in range(len(arr_eval)):
+		eigv = arr_evec[:,i].reshape(1,14).T
+		np.testing.assert_array_almost_equal(cov_mat.dot(eigv), arr_eval[i]*eigv, decimal=3, err_msg='', verbose=True)
+
+#=============================================
+# sort the eigenvales
+e_p = []
+for i in range(len(arr_eval)):
+	eig_pairs = [np.abs(arr_eval[i]), arr_evec[:,i]]
+	e_p.append(eig_pairs)
+#print (e_p)
+e_p.sort(key=lambda x: x[0], reverse=True)
+
+# sorted eigenvalues
+print 'sorted eigenvalues'
+for i in e_p:
+	print (i[0])
+	
+# Choose PC (take top two eigenvalues) 
+mat_w = np.hstack((e_p[0][1].reshape(14,1), e_p[1][1].reshape(14,1)))
+#print (np.shape(mat_w))
+#print (np.shape(arr))
+#========================================================
+# transform the input data into choosen pc
+arr_transformed = arr.dot(mat_w)
+#print (arr_transformed)
+
+plt.plot (arr_transformed[:,0], arr_transformed[:,1], marker = 'o', linestyle='None')
+plt.show()
+
+### pca by numpy in built method
+
+mlab_pca = PCA(arr)	
+#print('PC axes in terms of the measurement axes scaled by the standard deviations:\n', mlab_pca.Wt)
