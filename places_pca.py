@@ -143,7 +143,7 @@ ax = fig.add_subplot(111)
 #plt.show()
 
 #=====================================================
-# computing the mean vectors for headers
+# computing the mean vectors for headers. needed for scatter matrix
 mean_cli = np.mean(arr[:,0])
 mean_hou = np.mean(arr[:,1])
 mean_heal = np.mean(arr[:,2])
@@ -228,7 +228,7 @@ plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
 
 sklearn_pca = sklearnPCA(n_components=2)
 sklearn_transf = sklearn_pca.fit_transform(arr1)
-print (sklearn_transf.T)
+#print (sklearn_transf.T)
 plt.plot(sklearn_transf[:,0],sklearn_transf[:,1], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
 #plt.plot(sklearn_transf[20:40,0], sklearn_transf[20:40,1], '^', markersize=7, color='red', alpha=0.5, label='class2')
 
