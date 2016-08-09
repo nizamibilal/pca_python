@@ -226,7 +226,7 @@ plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
 
 ###from sklearn.decomposition
 
-sklearn_pca = sklearnPCA(n_components=2)
+sklearn_pca = sklearnPCA(n_components=3)
 sklearn_transf = sklearn_pca.fit_transform(arr1)
 #print (sklearn_transf.T)
 plt.plot(sklearn_transf[:,0],sklearn_transf[:,1], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
