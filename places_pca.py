@@ -17,47 +17,6 @@ from sklearn.preprocessing import scale
 #from sklearn.decomposition import PCA as sklearnPCA
 import argparse
 
-#============================
-###argument passing 
-parser = argparse.ArgumentParser(description='Choose column from input data')
-parser.add_argument
-
-
-
-## Read data file 
-arr = []
-fp = open ("places_number.txt","r")
-#read line into array 
-for line in fp.readlines():
-    # add a new sublist
-    arr.append([])
-    # loop over the elemets, split by whitespace
-    for i in line.split():
-        # convert to integer and append to the last
-        # element of the list
-		arr[-1].append(float(i))
-
-fp.close()
-
-arr = np.array(arr)
-print (arr[:,0])
-arr1 = np.array(arr) # non transformed input data
-
-# log transformation
-arr_log = np.zeros((329,14))
-for i in range(len(arr)):
-	arr_log[i,:] = np.log10(arr[i,:]) 
-	
-# scale to unit variance 
-arr_scale = []
-arr_scale = scale(arr, axis=0, with_mean=True, with_std=True, copy=True)
-arr = arr_scale	
-
-# check for NaNs in matrix and set it to 0 (due to log of negative numbers)	
-where_nans = np.isnan(arr_log)
-arr_log[where_nans] = 0
-#arr = np.array(arr_log)
-
 #Header and places titles
 head = ['Climate', 'HousingCost', 'HlthCare', 'Crime', 'Transp', 'Educ', 'Arts', 'Recreat', 'Econ', 'CaseNum', 'Long', 'Lat', 'Pop', 'StNum']
 places = ('Abilene,TX', 'Akron,OH', 'Albany,GA', 'Albany-Schenectady-Troy,NY',\
@@ -140,6 +99,61 @@ places = ('Abilene,TX', 'Akron,OH', 'Albany,GA', 'Albany-Schenectady-Troy,NY',\
 		'West-Palm-Beach-Boca-Raton-Delray-Beach,FL', 'Wheeling,WV-OH', 'Wichita,KS', \
 		'Wichita-Falls,TX', 'Williamsport,PA', 'Wilmington,DE-NJ-MD', 'Wilmington,NC', \
 		'Worcester,MA', 'Yakima,WA', 'York,PA', 'Youngstown-Warren,OH', 'Yuba-City,CA')
+#============================
+###argument passing 
+parser = argparse.ArgumentParser(description='argument')
+parser.add_argument('--met', type=str, nargs=1, help='data transformation method', dest='t_method',\
+					choices=['log', 'unit'])
+parser.add_argument(type=int, nargs='+', help='coloumn number', dest='col')
+args = parser.parse_args()
+col = args.col
+t_method = args.t_method
+
+##choosen coloumn 
+if args.col != None:
+	print ('choosen coloumns are:')
+	for i in col:
+		print (head[i])
+
+
+## Read data file 
+arr = []
+fp = open ("places_number.txt","r")
+#read line into array 
+for line in fp.readlines():
+    # add a new sublist
+    arr.append([])
+    # loop over the elemets, split by whitespace
+    for i in line.split():
+        # convert to integer and append to the last
+        # element of the list
+		arr[-1].append(float(i))
+fp.close()
+
+arr = np.array(arr)
+## select user defined coloumns
+arr = arr[:,col]
+arr1 = np.array(arr) # non transformed input data
+
+
+# log or unit variance scale transformation
+print ('choosen data transformation:')
+print (t_method[0])
+if t_method[0] == "log":
+	arr_log = np.zeros((329,len(col)))
+	for i in range(len(arr)):
+		arr_log[i,:] = np.log10(arr[i,:]) 
+	# check for NaNs in matrix and set it to 0 (due to log of negative numbers)	
+	where_nans = np.isnan(arr_log)
+	arr_log[where_nans] = 0
+	arr = np.array(arr_log)
+elif t_method[0] == 'unit':
+		# scale to unit variance 
+		arr_scale = []
+		arr_scale = scale(arr, axis=0, with_mean=True, with_std=True, copy=True)
+		arr = arr_scale	
+
+print (arr)
 
 #++++++++++++++++++++++=
 # plot 3 dimentions of the matrix, 
@@ -178,8 +192,8 @@ ax = fig.add_subplot(111)
 #print (arr.mean(0))
 
 #===============================================
-# covariance matrix
-cov_mat = np.cov([arr[:,0],arr[:,1],arr[:,2],arr[:,3],arr[:,4],arr[:,5],arr[:,6],arr[:,7],arr[:,8],arr[:,9],arr[:,10],arr[:,11],arr[:,12],arr[:,13]])
+# covariance matrix of selected coloumns
+cov_mat = np.cov([arr[:,0],arr[:,1],arr[:,2],arr[:,3],arr[:,4],arr[:,5],arr[:,6],arr[:,7],arr[:,8]])
 #print (np.shape(cov_mat), 'shape of the cov matrix')
 
 #===================================================
@@ -187,12 +201,11 @@ cov_mat = np.cov([arr[:,0],arr[:,1],arr[:,2],arr[:,3],arr[:,4],arr[:,5],arr[:,6]
 
 arr_eval, arr_evec = np.linalg.eig(cov_mat)
 
-
 #=============================
 # sanity check of calculated eigenvector and eigen values 
 # it must be cov matrix * eigen vector = eigen vector * eigen value
 for i in range(len(arr_eval)):
-		eigv = arr_evec[:,i].reshape(1,14).T
+		eigv = arr_evec[:,i].reshape(1,len(col)).T
 		np.testing.assert_array_almost_equal(cov_mat.dot(eigv), arr_eval[i]*eigv, decimal=3, err_msg='', verbose=True)
 
 #=============================================
@@ -211,7 +224,7 @@ for i in e_p:
 	
 	
 # Choose PC (take top two eigenvalues) 
-mat_w = np.hstack((e_p[0][1].reshape(14,1), e_p[1][1].reshape(14,1)))
+mat_w = np.hstack((e_p[0][1].reshape(len(col),1), e_p[1][1].reshape(len(col),1)))
 print (mat_w.T)
 #print (np.shape(arr))
 #========================================================
@@ -221,7 +234,7 @@ arr_transformed = mat_w.T.dot(arr.T)
 #print (arr_transformed)
 
 plt.plot (arr_transformed[0,:], arr_transformed[1,:], marker = 'o', linestyle='None')
-plt.show()
+#plt.show()
 
 ### pca by numpy in built method
 
@@ -238,7 +251,7 @@ plt.ylim([-4,4])
 plt.legend()
 plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
 
-plt.show()
+#plt.show()
 
 
 ###from sklearn.decomposition
