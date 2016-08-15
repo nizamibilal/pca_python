@@ -102,19 +102,12 @@ places = ('Abilene,TX', 'Akron,OH', 'Albany,GA', 'Albany-Schenectady-Troy,NY',\
 #============================
 ###argument passing 
 parser = argparse.ArgumentParser(description='argument')
-parser.add_argument('--met', type=str, nargs=1, help='data transformation method', dest='t_method',\
+parser.add_argument('-met', type=str, nargs=1, help='data transformation method', dest='t_method',\
 					choices=['log', 'unit'])
-parser.add_argument(type=int, nargs='+', help='coloumn number', dest='col')
+parser.add_argument('-c', type=int, nargs='+', help='coloumn number', dest='col')
 args = parser.parse_args()
 col = args.col
 t_method = args.t_method
-
-##choosen coloumn 
-if args.col != None:
-	print ('choosen coloumns are:')
-	for i in col:
-		print (head[i])
-
 
 ## Read data file 
 arr = []
@@ -131,7 +124,16 @@ for line in fp.readlines():
 fp.close()
 
 arr = np.array(arr)
+
 ## select user defined coloumns
+##choosen coloumn 
+if args.col != None:
+	print ('choosen coloumns are:')
+	for i in col:
+		print (head[i])
+else:
+	print ('all the data coloumns will be used')
+
 arr = arr[:,col]
 arr1 = np.array(arr) # non transformed input data
 
