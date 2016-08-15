@@ -1,4 +1,10 @@
 #!/usr/bin/python
+#==========================================================
+# A program to perform PCA on places data
+#
+#
+#==========================================================
+
 ## step by step PCA 
 import numpy as np
 import numpy.ma as ma
@@ -8,7 +14,15 @@ from mpl_toolkits.mplot3d import proj3d
 from matplotlib.patches import FancyArrowPatch
 from matplotlib.mlab import PCA
 from sklearn.preprocessing import scale
-from sklearn.decomposition import PCA as sklearnPCA
+#from sklearn.decomposition import PCA as sklearnPCA
+import argparse
+
+#============================
+###argument passing 
+parser = argparse.ArgumentParser(description='Choose column from input data')
+parser.add_argument
+
+
 
 ## Read data file 
 arr = []
@@ -26,6 +40,7 @@ for line in fp.readlines():
 fp.close()
 
 arr = np.array(arr)
+print (arr[:,0])
 arr1 = np.array(arr) # non transformed input data
 
 # log transformation
@@ -34,7 +49,7 @@ for i in range(len(arr)):
 	arr_log[i,:] = np.log10(arr[i,:]) 
 	
 # scale to unit variance 
-
+arr_scale = []
 arr_scale = scale(arr, axis=0, with_mean=True, with_std=True, copy=True)
 arr = arr_scale	
 
@@ -145,20 +160,20 @@ ax = fig.add_subplot(111)
 
 #=====================================================
 # computing the mean vectors for headers. needed for scatter matrix
-mean_cli = np.mean(arr[:,0])
-mean_hou = np.mean(arr[:,1])
-mean_heal = np.mean(arr[:,2])
-mean_crime = np.mean(arr[:,3])
-mean_trans = np.mean(arr[:,4])
-mean_edu = np.mean(arr[:,5])
-mean_art = np.mean(arr[:,6])
-mean_rec = np.mean(arr[:,7])
-mean_econ = np.mean(arr[:,8])
-mean_casen = np.mean(arr[:,9])
-mean_long = np.mean(arr[:,10])
-mean_lat = np.mean(arr[:,11])
-mean_pop = np.mean(arr[:,12])
-mean_stn = np.mean(arr[:,13])
+#mean_cli = np.mean(arr[:,0])
+#mean_hou = np.mean(arr[:,1])
+#mean_heal = np.mean(arr[:,2])
+#mean_crime = np.mean(arr[:,3])
+#mean_trans = np.mean(arr[:,4])
+#mean_edu = np.mean(arr[:,5])
+#mean_art = np.mean(arr[:,6])
+#mean_rec = np.mean(arr[:,7])
+#mean_econ = np.mean(arr[:,8])
+#mean_casen = np.mean(arr[:,9])
+#mean_long = np.mean(arr[:,10])
+#mean_lat = np.mean(arr[:,11])
+#mean_pop = np.mean(arr[:,12])
+#mean_stn = np.mean(arr[:,13])
 
 #print (arr.mean(0))
 
@@ -194,15 +209,16 @@ print 'sorted eigenvalues'
 for i in e_p:
 	print (i[0])
 	
+	
 # Choose PC (take top two eigenvalues) 
 mat_w = np.hstack((e_p[0][1].reshape(14,1), e_p[1][1].reshape(14,1)))
-#print (mat_w.T)
+print (mat_w.T)
 #print (np.shape(arr))
 #========================================================
 # transform the input data into choosen pc
 arr_transformed = mat_w.T.dot(arr.T)
 
-print (arr_transformed)
+#print (arr_transformed)
 
 plt.plot (arr_transformed[0,:], arr_transformed[1,:], marker = 'o', linestyle='None')
 plt.show()
@@ -222,22 +238,22 @@ plt.ylim([-4,4])
 plt.legend()
 plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
 
-#plt.show()
+plt.show()
 
 
 ###from sklearn.decomposition
 
-sklearn_pca = sklearnPCA(n_components=3)
-sklearn_transf = sklearn_pca.fit_transform(arr1)
+#sklearn_pca = sklearnPCA(n_components=3)
+#sklearn_transf = sklearn_pca.fit_transform(arr1)
 #print (sklearn_transf.T)
-plt.plot(sklearn_transf[:,0],sklearn_transf[:,1], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
+#plt.plot(sklearn_transf[:,0],sklearn_transf[:,1], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
 #plt.plot(sklearn_transf[20:40,0], sklearn_transf[20:40,1], '^', markersize=7, color='red', alpha=0.5, label='class2')
 
-plt.xlabel('x_values')
-plt.ylabel('y_values')
-plt.xlim([-4,4])
-plt.ylim([-4,4])
-plt.legend()
-plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
+#plt.xlabel('x_values')
+#plt.ylabel('y_values')
+#plt.xlim([-4,4])
+#plt.ylim([-4,4])
+#plt.legend()
+#plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
 
-plt.show()
+#plt.show()
