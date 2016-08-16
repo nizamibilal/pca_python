@@ -1,3 +1,4 @@
+PCA Places Rated
 Principle component analysis using python and numpy. 
 Although there are better methods such as PCA() class from the matplotlib.mlab to 
 do PCA. This code is meant to provide the first hand experiance of step by step working 
