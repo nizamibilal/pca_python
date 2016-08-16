@@ -1,5 +1,5 @@
 Principle component analysis using python and numpy. 
-Although there are methods such as PCA() class from the matplotlib.mlab to 
+Although there are better methods such as PCA() class from the matplotlib.mlab to 
 do PCA. This code is meant to provide the first hand experiance of step by step working 
 of PCA calculation.  
 
@@ -8,7 +8,7 @@ USAGE:
 
 For help:
 
-	python places_pca.py
+	python places_pca.py -h
 
 This program perform PCA on Places Rated Almanac data.
 The Places Rated Almanac data (Boyer and Savageau) which rates 329 communities according to nine criteria:
@@ -23,7 +23,7 @@ The Arts
 Recreation
 Economics
 
-additionally coloumns are 
+Additionally coloumns are 
 
 CaseNum	
 Long	
