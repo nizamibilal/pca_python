@@ -4,6 +4,7 @@ do PCA. This code is meant to provide the first hand experiance of step by step 
 of PCA calculation.  
 
 USAGE: 
+	
 	python places_pca.py -m <log/unit> -c <column number> -e <no of eigenvalues>
 
 For help:
