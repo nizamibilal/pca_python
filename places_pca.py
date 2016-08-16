@@ -6,6 +6,7 @@
 #==========================================================
 
 ## step by step PCA 
+from __future__ import print_function
 import numpy as np
 import numpy.ma as ma
 from matplotlib import pyplot as plt
@@ -102,11 +103,14 @@ places = ('Abilene,TX', 'Akron,OH', 'Albany,GA', 'Albany-Schenectady-Troy,NY',\
 #============================
 ###argument passing 
 parser = argparse.ArgumentParser(description='argument')
-parser.add_argument('-met', type=str, nargs=1, help='data transformation method', dest='t_method',\
+parser.add_argument('-m', type=str, nargs=1, help='data transformation method', dest='t_method',\
 					choices=['log', 'unit'])
 parser.add_argument('-c', type=int, nargs='+', help='coloumn number', dest='col')
+parser.add_argument('-e', type=int, nargs=1, help='number of eigenvector',dest='user_eigen')
 args = parser.parse_args()
+
 col = args.col
+user_eigen = args.user_eigen
 t_method = args.t_method
 
 ## Read data file 
@@ -124,7 +128,6 @@ for line in fp.readlines():
 fp.close()
 
 arr = np.array(arr)
-
 ## select user defined coloumns
 ##choosen coloumn 
 if args.col != None:
@@ -150,12 +153,13 @@ if t_method[0] == "log":
 	arr_log[where_nans] = 0
 	arr = np.array(arr_log)
 elif t_method[0] == 'unit':
-		# scale to unit variance 
-		arr_scale = []
-		arr_scale = scale(arr, axis=0, with_mean=True, with_std=True, copy=True)
-		arr = arr_scale	
+	# scale to unit variance 
+	arr_scale = []
+	arr_scale = scale(arr, axis=0, with_mean=True, with_std=True, copy=True)
+	arr = arr_scale	
+	
 
-print (arr)
+#print (arr)
 
 #++++++++++++++++++++++=
 # plot 3 dimentions of the matrix, 
@@ -196,7 +200,7 @@ ax = fig.add_subplot(111)
 #===============================================
 # covariance matrix of selected coloumns
 cov_mat = np.cov([arr[:,0],arr[:,1],arr[:,2],arr[:,3],arr[:,4],arr[:,5],arr[:,6],arr[:,7],arr[:,8]])
-#print (np.shape(cov_mat), 'shape of the cov matrix')
+print (np.shape(cov_mat), 'shape of the cov matrix')
 
 #===================================================
 # eigenvector and eigenvalues
@@ -216,18 +220,38 @@ e_p = []
 for i in range(len(arr_eval)):
 	eig_pairs = [np.abs(arr_eval[i]), arr_evec[:,i]]
 	e_p.append(eig_pairs)
-#print (e_p)
+#print (e_p[2])
 e_p.sort(key=lambda x: x[0], reverse=True)
 
-# sorted eigenvalues
-print 'sorted eigenvalues'
+# sorted eigenvalues and variation explained
+print ('sorted eigenvalues')
+tot_var = 0
+for i in e_p:
+	tot_var +=i[0]
+variation = []
+cum = []
+j = 0
+eigv = []
 for i in e_p:
 	print (i[0])
+	eigv.append(i[0])
+	variation.append(i[0]/tot_var)
+	print ("variation explained:",variation[j]*100)
+	cum = np.cumsum(variation)
+	print ('cumulative: ', cum[j]*100 )
+	j +=1
 	
-	
-# Choose PC (take top two eigenvalues) 
+## scree plot of variation 
+plt.plot(cum, eigv, marker = 'o')
+plt.xlabel('Cumulative variation')
+plt.ylabel('Eigenvalue')
+plt.title('Scree plot')
+plt.show()
+
+# Choose PC (take top two eigenvalues)
+ 
 mat_w = np.hstack((e_p[0][1].reshape(len(col),1), e_p[1][1].reshape(len(col),1)))
-print (mat_w.T)
+#print (mat_w.T)
 #print (np.shape(arr))
 #========================================================
 # transform the input data into choosen pc
@@ -235,7 +259,7 @@ arr_transformed = mat_w.T.dot(arr.T)
 
 #print (arr_transformed)
 
-plt.plot (arr_transformed[0,:], arr_transformed[1,:], marker = 'o', linestyle='None')
+#plt.plot (arr_transformed[0,:], arr_transformed[1,:], marker = 'o', linestyle='None')
 #plt.show()
 
 ### pca by numpy in built method
