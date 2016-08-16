@@ -1,8 +1,5 @@
 PCA Places Rated
-<<<<<<< HEAD
 
-=======
->>>>>>> 9777ea357291d0bf86c50193003800dd5a9e1af7
 Principle component analysis using python and numpy. 
 Although there are better methods such as PCA() class from the matplotlib.mlab to 
 do PCA. This code is meant to provide the first hand experiance of step by step working 
