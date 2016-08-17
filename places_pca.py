@@ -1,8 +1,8 @@
 #!/usr/bin/python
 #==========================================================
 # A program to perform PCA on places data
-#
-#
+# Bilal Nizami
+# UKZN, Durban, 2016
 #==========================================================
 
 ## step by step PCA 
@@ -17,6 +17,7 @@ from matplotlib.mlab import PCA
 from sklearn.preprocessing import scale
 #from sklearn.decomposition import PCA as sklearnPCA
 import argparse
+from math import exp
 
 #Header and places titles
 head = ['Climate', 'HousingCost', 'HlthCare', 'Crime', 'Transp', 'Educ', 'Arts', 'Recreat', 'Econ', 'CaseNum', 'Long', 'Lat', 'Pop', 'StNum']
@@ -142,7 +143,7 @@ arr1 = np.array(arr) # non transformed input data
 
 
 # log or unit variance scale transformation
-print ('choosen data transformation:')
+print ('data transformation method:')
 print (t_method[0])
 if t_method[0] == "log":
 	arr_log = np.zeros((329,len(col)))
@@ -165,8 +166,8 @@ elif t_method[0] == 'unit':
 # plot 3 dimentions of the matrix, 
 # just change the index of vectors to plot different dimentions
 
-fig = plt.figure(figsize=(10,10))
-ax = fig.add_subplot(111)
+#fig = plt.figure(figsize=(10,10))
+#ax = fig.add_subplot(111)
 #ax.plot(arr[:,0],arr[:,3], marker='o', linestyle='None')
 #plt.show()
 
@@ -180,15 +181,15 @@ ax = fig.add_subplot(111)
 
 #=====================================================
 # computing the mean vectors for headers. needed for scatter matrix
-#mean_cli = np.mean(arr[:,0])
-#mean_hou = np.mean(arr[:,1])
-#mean_heal = np.mean(arr[:,2])
-#mean_crime = np.mean(arr[:,3])
-#mean_trans = np.mean(arr[:,4])
-#mean_edu = np.mean(arr[:,5])
-#mean_art = np.mean(arr[:,6])
-#mean_rec = np.mean(arr[:,7])
-#mean_econ = np.mean(arr[:,8])
+mean_cli = np.mean(arr[:,0])
+mean_hou = np.mean(arr[:,1])
+mean_heal = np.mean(arr[:,2])
+mean_crime = np.mean(arr[:,3])
+mean_trans = np.mean(arr[:,4])
+mean_edu = np.mean(arr[:,5])
+mean_art = np.mean(arr[:,6])
+mean_rec = np.mean(arr[:,7])
+mean_econ = np.mean(arr[:,8])
 #mean_casen = np.mean(arr[:,9])
 #mean_long = np.mean(arr[:,10])
 #mean_lat = np.mean(arr[:,11])
@@ -199,8 +200,8 @@ ax = fig.add_subplot(111)
 
 #===============================================
 # covariance matrix of selected coloumns
-cov_mat = np.cov([arr[:,0],arr[:,1],arr[:,2],arr[:,3],arr[:,4],arr[:,5],arr[:,6],arr[:,7],arr[:,8]])
-print (np.shape(cov_mat), 'shape of the cov matrix')
+cov_mat = np.cov(arr, rowvar=False)
+#cov_mat = np.cov([arr[:,0],arr[:,1],arr[:,2],arr[:,3],arr[:,4],arr[:,5],arr[:,6],arr[:,7],arr[:,8]])
 
 #===================================================
 # eigenvector and eigenvalues
@@ -253,14 +254,41 @@ plt.show()
 mat_w = np.hstack((e_p[0][1].reshape(len(col),1), e_p[1][1].reshape(len(col),1)))
 #print (mat_w.T)
 #print (np.shape(arr))
+
+#=======================================================
+#principal component scores/ Z scores
+eigenvec = []
+eigenvec = e_p[0][1]
+j = 0
+z_score = []
+
+for i in eigenvec:
+	col_mean = pow(10,arr[:,j]).mean(axis=0)
+	#print (col_mean)
+	print (i)
+	#print ((col_mean-pow(10,arr[:,j])))
+	#print (i*(col_mean-pow(10,arr[:,j])))
+	z_score.append(i*(col_mean-pow(10,arr[:,j])))
+	j+=1
+z_score = np.array(z_score)
+print (z_score)
+#print (np.sum(z_score, axis=1))
+#print (sum(e_p[0][1].reshape(len(col),1)*arr[:,0]))
+#z_score = 
+
+
+
 #========================================================
 # transform the input data into choosen pc
 arr_transformed = mat_w.T.dot(arr.T)
-
+#print (np.shape(arr_transformed))
 #print (arr_transformed)
 
-#plt.plot (arr_transformed[0,:], arr_transformed[1,:], marker = 'o', linestyle='None')
-#plt.show()
+plt.plot (arr_transformed[0,:], arr_transformed[1,:], marker = 'o', linestyle='None')
+plt.title('PCA projection')
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+plt.show()
 
 ### pca by numpy in built method
 
@@ -270,12 +298,12 @@ mlab_pca = PCA(arr1)
 #plt.plot(mlab_pca.Y[0:329,0],mlab_pca.Y[0:329,1], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
 #plt.plot(mlab_pca.Y[20:40,0], mlab_pca.Y[20:40,1], '^', markersize=7, color='red', alpha=0.5, label='class2')
 
-plt.xlabel('x_values')
-plt.ylabel('y_values')
-plt.xlim([-4,4])
-plt.ylim([-4,4])
-plt.legend()
-plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
+#plt.xlabel('x_values')
+#plt.ylabel('y_values')
+#plt.xlim([-4,4])
+#plt.ylim([-4,4])
+#plt.legend()
+#plt.title('Transformed samples with class labels from matplotlib.mlab.PCA()')
 
 #plt.show()
 
