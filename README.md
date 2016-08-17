@@ -29,8 +29,8 @@ Economics
 Additionally coloumns are 
 
 CaseNum	
-Long	
-Lat	
-Pop	
+Long
+Lat
+Pop
 StNum
  
