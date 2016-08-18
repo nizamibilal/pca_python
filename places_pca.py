@@ -292,7 +292,7 @@ plt.show()
 
 ### pca by numpy in built method
 
-mlab_pca = PCA(arr1)
+#mlab_pca = PCA(arr1)
 #print(mlab_pca.Y)	
 #print('PC axes in terms of the measurement axes scaled by the standard deviations:\n', mlab_pca.Wt)
 #plt.plot(mlab_pca.Y[0:329,0],mlab_pca.Y[0:329,1], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
